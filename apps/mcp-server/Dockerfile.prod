@@ -1,0 +1,119 @@
+# syntax=docker/dockerfile:1.4
+# ============================================
+# Puls — MCP Server (apps/mcp-server) Production Dockerfile
+# Express + @modelcontextprotocol/sdk Streamable HTTP
+# Workspace: @puls/db, @puls/platform-core, @puls/ecommerce-common, @puls/shoptet-client, @puls/upgates-client
+# Port: 3001 (mapped to host 3011)
+# Domain: mcp.pulsmcp.com
+# ============================================
+
+# --- Base ---
+FROM node:22-alpine AS base
+RUN apk add --no-cache curl
+RUN corepack enable && corepack prepare pnpm@10.10.0 --activate
+WORKDIR /repo
+
+# --- Deps (full install with dev — needed for build) ---
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/mcp-server/package.json ./apps/mcp-server/
+COPY packages/db/package.json ./packages/db/
+COPY packages/platform-core/package.json ./packages/platform-core/
+COPY packages/ecommerce-common/package.json ./packages/ecommerce-common/
+COPY packages/shoptet-client/package.json ./packages/shoptet-client/
+COPY packages/upgates-client/package.json ./packages/upgates-client/
+RUN pnpm install --frozen-lockfile
+
+# --- Builder (compile workspace packages, build mcp-server) ---
+FROM base AS builder
+COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /repo/apps/mcp-server/node_modules ./apps/mcp-server/node_modules
+COPY --from=deps /repo/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /repo/packages/platform-core/node_modules ./packages/platform-core/node_modules
+COPY --from=deps /repo/packages/ecommerce-common/node_modules ./packages/ecommerce-common/node_modules
+COPY --from=deps /repo/packages/shoptet-client/node_modules ./packages/shoptet-client/node_modules
+COPY --from=deps /repo/packages/upgates-client/node_modules ./packages/upgates-client/node_modules
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages ./packages
+COPY apps/mcp-server ./apps/mcp-server
+
+ARG APP_VERSION=development
+ARG BUILD_TIME
+ENV APP_VERSION=$APP_VERSION
+ENV BUILD_TIME=$BUILD_TIME
+
+RUN pnpm --filter @puls/db build
+RUN pnpm --filter @puls/platform-core build
+RUN pnpm --filter @puls/ecommerce-common build
+RUN pnpm --filter @puls/shoptet-client build
+RUN pnpm --filter @puls/upgates-client build
+RUN pnpm --filter mcp-server build
+
+# --- Prod deps (production-only) ---
+FROM base AS prod-deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/mcp-server/package.json ./apps/mcp-server/
+COPY packages/db/package.json ./packages/db/
+COPY packages/platform-core/package.json ./packages/platform-core/
+COPY packages/ecommerce-common/package.json ./packages/ecommerce-common/
+COPY packages/shoptet-client/package.json ./packages/shoptet-client/
+COPY packages/upgates-client/package.json ./packages/upgates-client/
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+
+# --- Runner (final production image) ---
+FROM base AS runner
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV HOST=0.0.0.0
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 appuser
+
+ARG APP_VERSION=development
+ARG BUILD_TIME
+ENV APP_VERSION=$APP_VERSION
+ENV BUILD_TIME=$BUILD_TIME
+
+WORKDIR /repo
+
+# Production node_modules (workspace symlinks)
+COPY --from=prod-deps --chown=appuser:nodejs /repo/node_modules ./node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/apps/mcp-server/node_modules ./apps/mcp-server/node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/packages/db/node_modules ./packages/db/node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/packages/platform-core/node_modules ./packages/platform-core/node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/packages/ecommerce-common/node_modules ./packages/ecommerce-common/node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/packages/shoptet-client/node_modules ./packages/shoptet-client/node_modules
+COPY --from=prod-deps --chown=appuser:nodejs /repo/packages/upgates-client/node_modules ./packages/upgates-client/node_modules
+
+# Workspace metadata
+COPY --from=builder --chown=appuser:nodejs /repo/package.json /repo/pnpm-workspace.yaml /repo/pnpm-lock.yaml ./
+
+# Workspace package compiled output
+COPY --from=builder --chown=appuser:nodejs /repo/packages/db/package.json ./packages/db/
+COPY --from=builder --chown=appuser:nodejs /repo/packages/db/dist ./packages/db/dist
+COPY --from=builder --chown=appuser:nodejs /repo/packages/platform-core/package.json ./packages/platform-core/
+COPY --from=builder --chown=appuser:nodejs /repo/packages/platform-core/dist ./packages/platform-core/dist
+COPY --from=builder --chown=appuser:nodejs /repo/packages/ecommerce-common/package.json ./packages/ecommerce-common/
+COPY --from=builder --chown=appuser:nodejs /repo/packages/ecommerce-common/dist ./packages/ecommerce-common/dist
+COPY --from=builder --chown=appuser:nodejs /repo/packages/shoptet-client/package.json ./packages/shoptet-client/
+COPY --from=builder --chown=appuser:nodejs /repo/packages/shoptet-client/dist ./packages/shoptet-client/dist
+COPY --from=builder --chown=appuser:nodejs /repo/packages/upgates-client/package.json ./packages/upgates-client/
+COPY --from=builder --chown=appuser:nodejs /repo/packages/upgates-client/dist ./packages/upgates-client/dist
+
+# MCP server build artifacts
+COPY --from=builder --chown=appuser:nodejs /repo/apps/mcp-server/package.json ./apps/mcp-server/
+COPY --from=builder --chown=appuser:nodejs /repo/apps/mcp-server/dist ./apps/mcp-server/dist
+
+WORKDIR /repo/apps/mcp-server
+
+USER appuser
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://127.0.0.1:3001/health || exit 1
+
+CMD ["node", "dist/index.js"]

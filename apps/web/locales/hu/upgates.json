@@ -1,0 +1,14 @@
+{
+  "embed": {
+    "eyebrow": "Puls · Upgates",
+    "title": "A Puls bővítmény aktív 🎉",
+    "lede": "Köszönjük az aktiválást. Utolsó lépésként összekapcsolja AI-asszisztensét (Claude, Cursor) a webáruházával MCP-n keresztül.",
+    "stepsTitle": "Az összekapcsolás befejezése",
+    "step1": "Jelentkezzen be a Pulsba ugyanazzal az e-mail-címmel, amelyet az Upgates adminban használ.",
+    "step2": "A vezérlőpulton válassza ki AI-asszisztensét, és engedélyezze az eszközkategóriákat, amelyekhez hozzáférhet.",
+    "step3": "Másolja az MCP-címet az AI-kliensbe, és kezdjen rendelésekről, termékekről és ügyfelekről kérdezni.",
+    "connect": "Bejelentkezés és összekapcsolás",
+    "supportLabel": "Segítségre van szüksége?",
+    "supportText": "Írjon nekünk:"
+  }
+}

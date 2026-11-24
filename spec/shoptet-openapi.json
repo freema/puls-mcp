@@ -1,0 +1,993 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Shoptet mock API (Prism)",
+    "version": "0.0.2"
+  },
+  "paths": {
+    "/oauth/token": {
+      "post": {
+        "summary": "OAuth token exchange",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": { "type": "string" },
+                  "code": { "type": "string" },
+                  "client_id": { "type": "string" },
+                  "client_secret": { "type": "string" },
+                  "redirect_uri": { "type": "string" },
+                  "scope": { "type": "string" }
+                },
+                "required": ["grant_type", "code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["access_token", "expires_in", "token_type"],
+                  "properties": {
+                    "access_token": { "type": "string" },
+                    "expires_in": { "type": "integer" },
+                    "token_type": { "type": "string" }
+                  }
+                },
+                "example": {
+                  "access_token": "mock-oauth-access-token-fixed",
+                  "expires_in": 43200,
+                  "token_type": "bearer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource": {
+      "get": {
+        "summary": "Eshop resource dispatcher",
+        "parameters": [
+          {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["getBasicEshop"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Basic eshop",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["project", "user"],
+                      "properties": {
+                        "project": {
+                          "type": "object",
+                          "required": ["id", "url"],
+                          "properties": {
+                            "id": { "type": "integer" },
+                            "url": { "type": "string" }
+                          }
+                        },
+                        "user": {
+                          "type": "object",
+                          "required": ["email"],
+                          "properties": {
+                            "email": { "type": "string" },
+                            "name": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "project": {
+                      "id": 123,
+                      "url": "https://123.example.myshoptet.com"
+                    },
+                    "user": {
+                      "email": "owner@example.test",
+                      "name": "Mock Owner"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/action/ApiOAuthServer/getAccessToken": {
+      "get": {
+        "summary": "Short-lived API access token",
+        "responses": {
+          "200": {
+            "description": "API token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["access_token", "expires_in"],
+                  "properties": {
+                    "access_token": { "type": "string" },
+                    "expires_in": { "type": "integer" }
+                  }
+                },
+                "example": {
+                  "access_token": "mock-api-access-token-fixed",
+                  "expires_in": 1800
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "summary": "Orders list",
+        "parameters": [
+          { "name": "status", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["code", "status"],
+                        "properties": {
+                          "code": { "type": "string" },
+                          "status": { "type": "string" },
+                          "totalPrice": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    { "code": "MOCK-ORDER-001", "status": "paid", "totalPrice": "199.00" },
+                    { "code": "MOCK-ORDER-002", "status": "new", "totalPrice": "49.00" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/{code}": {
+      "get": {
+        "summary": "Order detail",
+        "parameters": [
+          { "name": "code", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["code", "status"],
+                      "properties": {
+                        "code": { "type": "string" },
+                        "status": { "type": "string" },
+                        "creationTime": { "type": "string" },
+                        "totalPrice": { "type": "string" },
+                        "currency": { "type": "string" },
+                        "customer": {
+                          "type": "object",
+                          "properties": {
+                            "email": { "type": "string" },
+                            "name": { "type": "string" }
+                          }
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": { "type": "string" },
+                              "amount": { "type": "number" },
+                              "unitPrice": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "code": "MOCK-ORDER-001",
+                    "status": "paid",
+                    "creationTime": "2026-05-04T10:00:00+02:00",
+                    "totalPrice": "199.00",
+                    "currency": "CZK",
+                    "customer": { "email": "buyer@example.test", "name": "Mock Buyer" },
+                    "items": [
+                      { "name": "Mock Product A", "amount": 1, "unitPrice": "199.00" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update order (status / comment)",
+        "parameters": [
+          { "name": "code", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "status": { "type": "string" },
+                      "comment": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["code", "status"],
+                      "properties": {
+                        "code": { "type": "string" },
+                        "status": { "type": "string" }
+                      }
+                    }
+                  }
+                },
+                "example": { "data": { "code": "MOCK-ORDER-001", "status": "paid" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/changes": {
+      "get": {
+        "summary": "Orders changes (delta)",
+        "parameters": [
+          { "name": "from", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Changes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cursor": { "type": "string" },
+                        "changes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": { "type": "string" },
+                              "changeType": { "type": "string" },
+                              "changedAt": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "cursor": "2026-05-04T10:30:00+02:00",
+                    "changes": [
+                      { "code": "MOCK-ORDER-001", "changeType": "status", "changedAt": "2026-05-04T10:15:00+02:00" },
+                      { "code": "MOCK-ORDER-002", "changeType": "create", "changedAt": "2026-05-04T10:25:00+02:00" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "Products list",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["guid", "name"],
+                        "properties": {
+                          "guid": { "type": "string" },
+                          "name": { "type": "string" },
+                          "code": { "type": "string" },
+                          "price": { "type": "string" },
+                          "currency": { "type": "string" },
+                          "visible": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "guid": "prod-guid-001",
+                      "name": "Mock Product A",
+                      "code": "PROD-A",
+                      "price": "199.00",
+                      "currency": "CZK",
+                      "visible": true
+                    },
+                    {
+                      "guid": "prod-guid-002",
+                      "name": "Mock Product B",
+                      "code": "PROD-B",
+                      "price": "49.00",
+                      "currency": "CZK",
+                      "visible": true
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{guid}": {
+      "get": {
+        "summary": "Product detail",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "name"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "name": { "type": "string" },
+                        "code": { "type": "string" },
+                        "description": { "type": "string" },
+                        "price": { "type": "string" },
+                        "currency": { "type": "string" },
+                        "visible": { "type": "boolean" },
+                        "categories": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "guid": "prod-guid-001",
+                    "name": "Mock Product A",
+                    "code": "PROD-A",
+                    "description": "Mock description for product A.",
+                    "price": "199.00",
+                    "currency": "CZK",
+                    "visible": true,
+                    "categories": ["cat-guid-electronics"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update product fields",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "description": { "type": "string" },
+                      "priceWithVat": { "type": "number" },
+                      "visibility": { "type": "string", "enum": ["visible", "hidden"] }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "name"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "name": { "type": "string" },
+                        "description": { "type": "string" },
+                        "price": { "type": "string" },
+                        "visible": { "type": "boolean" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "guid": "prod-guid-001",
+                    "name": "Mock Product A (updated)",
+                    "description": "Updated mock description.",
+                    "price": "249.00",
+                    "visible": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{guid}/action-price": {
+      "put": {
+        "summary": "Set product action (sale) price",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": ["price"],
+                    "properties": {
+                      "price": { "type": "number" },
+                      "validFrom": { "type": "string", "format": "date-time" },
+                      "validTo": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action price set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "price"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "price": { "type": "number" },
+                        "validFrom": { "type": "string" },
+                        "validTo": { "type": "string" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "guid": "prod-guid-001",
+                    "price": 149,
+                    "validFrom": "2026-05-10T00:00:00+02:00",
+                    "validTo": "2026-05-20T23:59:59+02:00"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{guid}/stock": {
+      "patch": {
+        "summary": "Update product stock quantity at a specific stock",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": ["stockId", "quantity"],
+                    "properties": {
+                      "stockId": { "type": "string" },
+                      "quantity": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "stockId", "quantity"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "stockId": { "type": "string" },
+                        "quantity": { "type": "number" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": { "guid": "prod-guid-001", "stockId": "stock-default", "quantity": 42 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vouchers": {
+      "post": {
+        "summary": "Create a discount voucher",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": ["code", "discountType", "discountValue"],
+                    "properties": {
+                      "code": { "type": "string" },
+                      "discountType": { "type": "string", "enum": ["percent", "amount"] },
+                      "discountValue": { "type": "number" },
+                      "validUntil": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voucher created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["code", "discountType", "discountValue"],
+                      "properties": {
+                        "code": { "type": "string" },
+                        "discountType": { "type": "string" },
+                        "discountValue": { "type": "number" },
+                        "validUntil": { "type": "string" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "code": "MOCK-BF-2026",
+                    "discountType": "percent",
+                    "discountValue": 20,
+                    "validUntil": "2026-12-01T00:00:00+02:00"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{guid}/notes": {
+      "post": {
+        "summary": "Append internal note to a customer",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data"],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": ["note"],
+                    "properties": {
+                      "note": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "note"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "note": { "type": "string" },
+                        "createdAt": { "type": "string" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "guid": "cust-guid-001",
+                    "note": "VIP — called back",
+                    "createdAt": "2026-05-07T10:00:00+02:00"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "summary": "Customers list",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["guid", "email"],
+                        "properties": {
+                          "guid": { "type": "string" },
+                          "email": { "type": "string" },
+                          "name": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    { "guid": "cust-guid-001", "email": "alice@example.test", "name": "Alice Mock" },
+                    { "guid": "cust-guid-002", "email": "bob@example.test", "name": "Bob Mock" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{guid}": {
+      "get": {
+        "summary": "Customer detail",
+        "parameters": [
+          { "name": "guid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["guid", "email"],
+                      "properties": {
+                        "guid": { "type": "string" },
+                        "email": { "type": "string" },
+                        "name": { "type": "string" },
+                        "phone": { "type": "string" },
+                        "ordersCount": { "type": "integer" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "guid": "cust-guid-001",
+                    "email": "alice@example.test",
+                    "name": "Alice Mock",
+                    "phone": "+420123456789",
+                    "ordersCount": 3
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks": {
+      "get": {
+        "summary": "Stocks list",
+        "responses": {
+          "200": {
+            "description": "Stocks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["id", "name"],
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "default": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    { "id": "stock-main", "name": "Hlavní sklad", "default": true },
+                    { "id": "stock-prague", "name": "Praha showroom", "default": false }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "summary": "Categories tree",
+        "responses": {
+          "200": {
+            "description": "Categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["guid", "name"],
+                        "properties": {
+                          "guid": { "type": "string" },
+                          "name": { "type": "string" },
+                          "parentGuid": { "type": "string", "nullable": true },
+                          "visible": { "type": "boolean" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    { "guid": "cat-guid-electronics", "name": "Elektronika", "parentGuid": null, "visible": true },
+                    { "guid": "cat-guid-phones", "name": "Telefony", "parentGuid": "cat-guid-electronics", "visible": true }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eshop": {
+      "get": {
+        "summary": "Eshop info",
+        "responses": {
+          "200": {
+            "description": "Eshop",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["id", "name", "url"],
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "url": { "type": "string" },
+                        "currency": { "type": "string" },
+                        "language": { "type": "string" },
+                        "vatPayer": { "type": "boolean" }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": 123,
+                    "name": "Mock e-shop",
+                    "url": "https://123.example.myshoptet.com",
+                    "currency": "CZK",
+                    "language": "cs",
+                    "vatPayer": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks": {
+      "post": {
+        "summary": "Register webhook (mock)",
+        "responses": {
+          "200": {
+            "description": "Registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": { "id": { "type": "string" } }
+                    }
+                  }
+                },
+                "example": {
+                  "data": { "id": "mock-webhook-1" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

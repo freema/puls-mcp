@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "login": "Sign in",
+    "dashboard": "Dashboard"
+  },
+  "locale": {
+    "switcherLabel": "Language",
+    "cs": "Čeština",
+    "sk": "Slovenčina",
+    "hu": "Magyar",
+    "en": "English"
+  },
+  "cta": {
+    "tryFree": "Try for free",
+    "contactUs": "Contact us",
+    "learnMore": "Learn more",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "generic": {
+      "title": "Something went wrong.",
+      "description": "Our side broke. We know about it and we're looking into it. Please try again in a moment.",
+      "retry": "Try again"
+    },
+    "notFound": {
+      "title": "This page doesn't exist.",
+      "description": "It may have been moved, renamed, or it never existed. Jump back home or send us a message.",
+      "primary": "Back home",
+      "secondary": "Open dashboard"
+    },
+    "unauthorized": {
+      "title": "Please sign in first.",
+      "description": "You can't access this page until you sign in. It takes ten seconds.",
+      "primary": "Sign in",
+      "secondary": "Home"
+    },
+    "forbidden": {
+      "title": "Not for you, sorry.",
+      "description": "This page exists but your account can't see it. Try picking a different shop or reach out to your admin.",
+      "primary": "Pick a shop",
+      "secondary": "Contact"
+    },
+    "maintenance": {
+      "title": "We're under maintenance.",
+      "description": "We'll be back shortly. Please try again in a few minutes.",
+      "primary": "Home",
+      "secondary": "Contact"
+    }
+  }
+}

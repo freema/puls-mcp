@@ -1,0 +1,16 @@
+{
+  "title": "Adminisztráció",
+  "nav": {
+    "overview": "Overview",
+    "shops": "Shops",
+    "pricing": "Pricing",
+    "logs": "Logs",
+    "feedback": "Visszajelzés",
+    "webhooks": "Webhooks",
+    "apiKeys": "API Keys",
+    "emails": "E-mailek",
+    "prompts": "Promptok",
+    "system": "System",
+    "incidents": "Incidensek"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "puls-mcp",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "scripts": {
+    "lint": "pnpm --filter web lint",
+    "lint:fix": "pnpm --filter web lint:fix",
+    "typecheck": "pnpm --filter @puls/db typecheck && pnpm --filter web typecheck && pnpm --filter mcp-server typecheck && pnpm --filter @puls/platform-core typecheck && pnpm --filter @puls/ecommerce-common typecheck && pnpm --filter @puls/shoptet-client typecheck && pnpm --filter @puls/upgates-client typecheck",
+    "test": "pnpm --filter web test && pnpm --filter mcp-server test && pnpm --filter @puls/platform-core test && pnpm --filter @puls/ecommerce-common test && pnpm --filter @puls/shoptet-client test && pnpm --filter @puls/upgates-client test",
+    "test:run": "pnpm --filter web test:run && pnpm --filter mcp-server test:run && pnpm --filter @puls/platform-core test:run && pnpm --filter @puls/ecommerce-common test:run && pnpm --filter @puls/shoptet-client test:run && pnpm --filter @puls/upgates-client test:run"
+  },
+  "packageManager": "pnpm@10.10.0"
+}

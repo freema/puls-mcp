@@ -1,0 +1,210 @@
+version: '3'
+
+dotenv:
+  - .env
+
+tasks:
+  dev:
+    desc: Start everything and tail app logs
+    cmds:
+      - docker compose up -d
+      - docker compose logs -f app mcp
+
+  build:
+    desc: Build all images
+    cmds:
+      - docker compose build
+
+  stop:
+    desc: Stop all containers
+    cmds:
+      - docker compose down
+
+  reload:
+    desc: Recreate containers (pickup .env changes)
+    cmds:
+      - docker compose up -d --force-recreate
+      - docker compose logs -f app mcp
+
+  status:
+    desc: Container status
+    cmds:
+      - docker compose ps
+
+  logs:
+    desc: Tail app logs
+    cmds:
+      - docker compose logs -f app mcp
+
+  logs:app:
+    desc: Tail web app logs
+    cmds:
+      - docker compose logs -f app
+
+  logs:mcp:
+    desc: Tail MCP server logs
+    cmds:
+      - docker compose logs -f mcp
+
+  health:
+    desc: Health check
+    cmds:
+      - 'docker compose exec postgres pg_isready -U puls -d puls'
+      - docker compose exec -T app curl -s http://127.0.0.1:3000/healthz | jq .
+      - docker compose exec -T mcp curl -s http://127.0.0.1:3001/health | jq .
+
+  shell:
+    desc: Shell in app container
+    cmds:
+      - docker compose exec app sh
+
+  shell:mcp:
+    desc: Shell in MCP container
+    cmds:
+      - docker compose exec mcp sh
+
+  shell:db:
+    desc: PostgreSQL shell
+    cmds:
+      - docker compose exec postgres psql -U puls -d puls
+
+  db:generate:
+    desc: Generate Drizzle migrations
+    cmds:
+      - docker compose exec app pnpm db:generate
+
+  db:migrate:
+    desc: Run Drizzle migrations
+    cmds:
+      - docker compose exec app pnpm db:migrate
+
+  db:seed:
+    desc: Seed dev fixtures (admin user + demo shops + OAuth client)
+    cmds:
+      - docker compose exec app pnpm db:seed
+
+  db:reset:
+    desc: Drop & recreate the dev database, re-run migrations + seed
+    cmds:
+      - docker compose exec -T postgres psql -U puls -d postgres -c "DROP DATABASE IF EXISTS puls WITH (FORCE);"
+      - docker compose exec -T postgres psql -U puls -d postgres -c "CREATE DATABASE puls;"
+      - docker compose exec app pnpm db:migrate
+      - docker compose exec app pnpm db:seed
+
+  db:studio:
+    desc: Drizzle Studio
+    cmds:
+      - docker compose exec app pnpm db:studio
+
+  inspector:
+    desc: Open MCP Inspector — Streamable HTTP
+    cmds:
+      - |
+        echo "Opening MCP Inspector..."
+        echo ""
+        echo "Transport: Streamable HTTP"
+        echo "MCP URL: http://localhost:${MCP_PUBLISH:-3001}/mcp (OAuth Bearer required)"
+        echo ""
+        npx @modelcontextprotocol/inspector
+
+  test:
+    desc: Run tests
+    cmds:
+      - docker compose exec app pnpm test:run
+      - docker compose exec mcp pnpm test:run
+      - docker compose exec app pnpm --filter @puls/shoptet-client test:run
+
+  lint:
+    desc: ESLint
+    cmds:
+      - docker compose exec app pnpm lint
+
+  lint:fix:
+    cmds:
+      - docker compose exec app pnpm lint:fix
+
+  format:
+    cmds:
+      - docker compose exec app pnpm format
+
+  typecheck:
+    desc: Typecheck
+    cmds:
+      - docker compose exec app pnpm typecheck
+      - docker compose exec mcp pnpm typecheck
+      - docker compose exec app pnpm --filter @puls/shoptet-client typecheck
+
+  check:
+    desc: lint + format:check + typecheck
+    cmds:
+      - task: lint
+      - docker compose exec app pnpm format:check
+      - task: typecheck
+
+  clean:
+    desc: Remove containers, volumes, node_modules, build
+    cmds:
+      - docker compose down -v --rmi local
+      - rm -rf apps/web/node_modules apps/web/build apps/mcp-server/node_modules apps/mcp-server/dist node_modules
+
+  e2e:
+    desc: Playwright suite proti compose stack (profile=e2e). Spouští se VŽDY v containeru, nikdy z hostu.
+    env:
+      APP_PUBLISH: '13000'
+      MCP_PUBLISH: '13001'
+    cmds:
+      - docker compose --profile e2e run --rm e2e
+
+  e2e:oauth:
+    desc: Jen MCP OAuth flow specy (install + mcp-oauth + mcp-tools + full-flow). Container only.
+    cmds:
+      - |
+        docker compose --profile e2e run --rm e2e bash -lc "
+          set -euo pipefail
+          npm install -g pnpm@10.10.0 --silent
+          cd /repo
+          pnpm install
+          pnpm -C tests-e2e exec playwright install
+          exec pnpm -C tests-e2e exec playwright test \
+            install.spec.ts \
+            mcp-oauth.spec.ts \
+            mcp-tools.spec.ts \
+            full-flow.spec.ts
+        "
+
+  e2e:upgates:
+    desc: Jen Upgates specy (connector + aktivační flow) proti mock-upgates. Container only.
+    cmds:
+      - |
+        docker compose --profile e2e run --rm e2e bash -lc "
+          set -euo pipefail
+          npm install -g pnpm@10.10.0 --silent
+          cd /repo
+          pnpm install
+          pnpm -C tests-e2e exec playwright install
+          exec pnpm -C tests-e2e exec playwright test \
+            mcp-tools-upgates.spec.ts \
+            webhook-upgates.spec.ts \
+            install-upgates.spec.ts \
+            upgates-opening.spec.ts \
+            upgates-lifecycle.spec.ts
+        "
+
+  e2e:flow:
+    desc: Jen smoke full-flow (install → login → MCP OAuth → tool call). Container only.
+    cmds:
+      - |
+        docker compose --profile e2e run --rm e2e bash -lc "
+          set -euo pipefail
+          npm install -g pnpm@10.10.0 --silent
+          cd /repo
+          pnpm install
+          pnpm -C tests-e2e exec playwright install
+          exec pnpm -C tests-e2e exec playwright test full-flow.spec.ts
+        "
+
+  e2e:ui:
+    desc: Playwright UI inside e2e container
+    cmds:
+      - docker compose --profile e2e run --rm -p 9323:9323 e2e bash -lc "set -euo pipefail; npm install -g pnpm@10.10.0 --silent; cd /repo; pnpm install; pnpm -C tests-e2e exec playwright install; exec pnpm -C tests-e2e exec playwright test --ui-host=0.0.0.0 --ui-port=9323"
+

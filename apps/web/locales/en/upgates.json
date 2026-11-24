@@ -1,0 +1,14 @@
+{
+  "embed": {
+    "eyebrow": "Puls · Upgates",
+    "title": "The Puls add-on is active 🎉",
+    "lede": "Thanks for activating. The last step is to connect your AI assistant (Claude, Cursor) to your store over MCP.",
+    "stepsTitle": "How to finish connecting",
+    "step1": "Sign in to Puls with the same e-mail you use in the Upgates admin.",
+    "step2": "In the dashboard, pick your AI assistant and allow the tool categories it may access.",
+    "step3": "Copy the MCP address into your AI client and start asking about orders, products and customers.",
+    "connect": "Sign in and connect the assistant",
+    "supportLabel": "Need help?",
+    "supportText": "Write to us at"
+  }
+}

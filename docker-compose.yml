@@ -1,0 +1,203 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: puls-postgres
+    environment:
+      POSTGRES_USER: puls
+      POSTGRES_PASSWORD: puls
+      POSTGRES_DB: puls
+    ports:
+      - '${POSTGRES_PUBLISH:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U puls -d puls']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: puls-redis
+    ports:
+      - '${REDIS_PUBLISH:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mock-shoptet:
+    image: stoplight/prism:5
+    container_name: puls-mock-shoptet
+    command: mock -h 0.0.0.0 -p 4010 --multiprocess false /tmp/shoptet-openapi.json
+    ports:
+      - '4010:4010'
+    volumes:
+      - ./spec/shoptet-openapi.json:/tmp/shoptet-openapi.json:ro
+
+  mock-upgates:
+    image: stoplight/prism:5
+    container_name: puls-mock-upgates
+    command: mock -h 0.0.0.0 -p 4011 --multiprocess false /tmp/upgates-openapi.json
+    ports:
+      - '4011:4011'
+    volumes:
+      - ./spec/upgates-openapi.json:/tmp/upgates-openapi.json:ro
+
+  app:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: puls-app
+    working_dir: /repo/apps/web
+    ports:
+      - '${APP_PUBLISH:-3000}:3000'
+    environment:
+      DATABASE_URL: postgresql://puls:puls@postgres:5432/puls
+      REDIS_URL: redis://redis:6379
+      PORT: '3000'
+      NODE_ENV: development
+      SHOPTET_API_BASE_URL: http://mock-shoptet:4010
+      UPGATES_API_BASE_URL: http://mock-upgates:4011
+      SHOPTET_CLIENT_ID: mock-client-id
+      SHOPTET_CLIENT_SECRET: mock-client-secret
+      SHOPTET_REDIRECT_URI: http://localhost/oauth/callback
+      WEB_PUBLIC_ORIGIN: http://app:3000
+      UPGATES_SIGNATURE_TOKEN: ${UPGATES_SIGNATURE_TOKEN:-puls-upgates-signature-token}
+      UPGATES_SIGNATURE_PUBKEY: ${UPGATES_SIGNATURE_PUBKEY:-LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE4bC9xSTg1eDZrRkNPUlk5NkppYwptRlU0Szl4K3hZVmF5RFFJdnNBZVpJYlZURGFZNHhsRmdBSGRUZFZhb1VVWWRpaG1CVk93K2JFSXpLL3IzMHp4Cmh6S2VheUFIN0g3UnRKNGhWNkQzdEEwM1Q3aTJnU2RIbXlmd0dUajQ5SGhmWHB6dlozYzlsR0kvOGxYbmpLOHcKT1ArYXFoVDhHTkdFT1o4cm44QW1mREVRZXVsVXo1VEN1UDY4aC9HRjRvcHA4TEdlMzcxck9tSVpibHlKb2tYUQpYM0FUZWZlM0lYZnRQT25oMFpqVkZ3eUdjTHVhQUFkQjJBb1NGdlJKT2Q4blJUY1pBUkN1cS9iRE1NRUtWdlNFCkUwL21nQlR0eFpCN0VIeUtiRHVzaTlrekdtUmJVZ3BaUXhPR3BIMENnMTNCZ2plbGc2SFRzNHJlM3ZaTkNuVTMKTVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==}
+      CREDENTIALS_ENC_KEY: ${CREDENTIALS_ENC_KEY:-puls-e2e-credentials-enc-key-please-rotate}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      MCP_INTERNAL_URL: http://mcp:3001
+      MCP_PUBLIC_ORIGIN: http://localhost:${MCP_PUBLISH:-3001}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      PULS_LOG_MAIL: ${PULS_LOG_MAIL:-0}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      OTP_LOGIN_DISABLED: ${OTP_LOGIN_DISABLED:-}
+      OTP_GLOBAL_HOURLY_MAX: ${OTP_GLOBAL_HOURLY_MAX:-50}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-}
+      AUTH_GOOGLE_REDIRECT_URI: ${AUTH_GOOGLE_REDIRECT_URI:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      CRON_SECRET: ${CRON_SECRET:-puls-cron-test-secret}
+    volumes:
+      - ./apps/web:/repo/apps/web
+      - ./packages:/repo/packages
+      - ./package.json:/repo/package.json
+      - ./pnpm-workspace.yaml:/repo/pnpm-workspace.yaml
+      - ./pnpm-lock.yaml:/repo/pnpm-lock.yaml
+    healthcheck:
+      test: ['CMD', 'curl', '-sf', 'http://127.0.0.1:3000/healthz']
+      interval: 5s
+      timeout: 5s
+      retries: 90
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mock-shoptet:
+        condition: service_started
+      mock-upgates:
+        condition: service_started
+
+  mcp:
+    build:
+      context: .
+      dockerfile: apps/mcp-server/Dockerfile
+    container_name: puls-mcp
+    working_dir: /repo/apps/mcp-server
+    ports:
+      - '${MCP_PUBLISH:-3001}:3001'
+    environment:
+      PORT: '3001'
+      NODE_ENV: development
+      DATABASE_URL: postgresql://puls:puls@postgres:5432/puls
+      REDIS_URL: redis://redis:6379
+      SHOPTET_API_BASE_URL: http://mock-shoptet:4010
+      UPGATES_API_BASE_URL: http://mock-upgates:4011
+      CREDENTIALS_ENC_KEY: ${CREDENTIALS_ENC_KEY:-puls-e2e-credentials-enc-key-please-rotate}
+      MCP_PUBLIC_ORIGIN: http://localhost:${MCP_PUBLISH:-3001}
+      WEB_PUBLIC_ORIGIN: http://localhost:${APP_PUBLISH:-3000}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-development}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
+      LOG_LEVEL: ${LOG_LEVEL:-}
+    volumes:
+      - ./apps/mcp-server:/repo/apps/mcp-server
+      - ./apps/web/package.json:/repo/apps/web/package.json
+      - ./packages:/repo/packages
+      - ./package.json:/repo/package.json
+      - ./pnpm-workspace.yaml:/repo/pnpm-workspace.yaml
+      - ./pnpm-lock.yaml:/repo/pnpm-lock.yaml
+    healthcheck:
+      test: ['CMD', 'curl', '-sf', 'http://127.0.0.1:3001/health']
+      interval: 5s
+      timeout: 5s
+      retries: 45
+      start_period: 20s
+    depends_on:
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mock-shoptet:
+        condition: service_started
+      mock-upgates:
+        condition: service_started
+
+  e2e:
+    profiles: ['e2e']
+    image: mcr.microsoft.com/playwright:v1.50.0-jammy
+    container_name: puls-e2e
+    working_dir: /repo/tests-e2e
+    environment:
+      BASE_URL_WEB: http://app:3000
+      BASE_URL_MCP: http://mcp:3001
+      DATABASE_URL: postgresql://puls:puls@postgres:5432/puls
+      CRON_SECRET: ${CRON_SECRET:-puls-cron-test-secret}
+      UPGATES_SIGNATURE_TOKEN: ${UPGATES_SIGNATURE_TOKEN:-puls-upgates-signature-token}
+      CREDENTIALS_ENC_KEY: ${CREDENTIALS_ENC_KEY:-puls-e2e-credentials-enc-key-please-rotate}
+      CI: '1'
+    volumes:
+      - .:/repo
+      - e2e_node_modules:/repo/node_modules
+    depends_on:
+      app:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mock-shoptet:
+        condition: service_started
+      mock-upgates:
+        condition: service_started
+    command:
+      - bash
+      - -lc
+      - |
+          set -euo pipefail
+          npm install -g pnpm@10.10.0 --silent
+          cd /repo
+          pnpm install
+          pnpm -C tests-e2e exec playwright install
+          exec pnpm -C tests-e2e exec playwright test
+
+volumes:
+  postgres_data:
+  redis_data:
+  e2e_node_modules:

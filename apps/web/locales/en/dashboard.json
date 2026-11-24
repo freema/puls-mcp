@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "activity": "Activity log",
+    "tools": "Tools",
+    "write_history": "Write History",
+    "connections": "Connected apps"
+  },
+  "common": {
+    "loading": "Loading…",
+    "noData": "No data",
+    "retry": "Try again"
+  }
+}

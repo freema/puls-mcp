@@ -1,0 +1,23 @@
+{
+  "name": "@puls/db",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "exports": {
+    "./schema": {
+      "types": "./src/schema.ts",
+      "default": "./dist/schema.js"
+    }
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "drizzle-orm": "^0.41.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

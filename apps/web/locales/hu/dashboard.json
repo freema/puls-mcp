@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "overview": "Áttekintés",
+    "activity": "Activity log",
+    "tools": "Tools",
+    "write_history": "Írások előzményei",
+    "connections": "Csatlakoztatott alkalmazások"
+  },
+  "common": {
+    "loading": "Betöltés…",
+    "noData": "Nincs adat",
+    "retry": "Újrapróbálkozás"
+  }
+}

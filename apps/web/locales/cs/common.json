@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "login": "Přihlášení",
+    "dashboard": "Dashboard"
+  },
+  "locale": {
+    "switcherLabel": "Jazyk",
+    "cs": "Čeština",
+    "sk": "Slovenčina",
+    "hu": "Magyar",
+    "en": "English"
+  },
+  "cta": {
+    "tryFree": "Vyzkoušet zdarma",
+    "contactUs": "Napsat nám",
+    "learnMore": "Více informací",
+    "back": "Zpět",
+    "save": "Uložit",
+    "cancel": "Zrušit"
+  },
+  "errors": {
+    "generic": {
+      "title": "Něco se pokazilo.",
+      "description": "Na naší straně to spadlo. Už o tom víme a koukáme na to. Zkuste to za chvíli znovu.",
+      "retry": "Zkusit znovu"
+    },
+    "notFound": {
+      "title": "Tahle stránka neexistuje.",
+      "description": "Možná byla přesunutá, přejmenovaná, nebo nikdy nebyla. Skoč zpátky do dashboardu nebo nám napiš.",
+      "primary": "Zpět na úvod",
+      "secondary": "Otevřít dashboard"
+    },
+    "unauthorized": {
+      "title": "Nejdřív se přihlaste.",
+      "description": "K této stránce se nedostanete, dokud nejste přihlášeni. Trvá to deset vteřin.",
+      "primary": "Přihlásit se",
+      "secondary": "Na úvod"
+    },
+    "forbidden": {
+      "title": "Sem prosím ne.",
+      "description": "Tahle stránka existuje, ale váš účet ji vidět nemá. Zkuste si vybrat jiný obchod nebo se ozvat administrátorovi.",
+      "primary": "Vybrat obchod",
+      "secondary": "Kontakt"
+    },
+    "maintenance": {
+      "title": "Provádíme údržbu.",
+      "description": "Jsme zpět za chvíli. Zkuste to prosím za pár minut.",
+      "primary": "Na úvod",
+      "secondary": "Kontakt"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "overview": "Prehľad",
+    "activity": "Activity log",
+    "tools": "Tools",
+    "write_history": "História zápisov",
+    "connections": "Pripojené aplikácie"
+  },
+  "common": {
+    "loading": "Načítavam…",
+    "noData": "Žiadne dáta",
+    "retry": "Skúsiť znovu"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "embed": {
+    "eyebrow": "Puls · Upgates",
+    "title": "Doplněk Puls je aktivní 🎉",
+    "lede": "Děkujeme za aktivaci. Posledním krokem propojíte svého AI asistenta (Claude, Cursor) s vaším eshopem přes MCP.",
+    "stepsTitle": "Jak dokončit propojení",
+    "step1": "Přihlaste se do Pulsu stejným e-mailem, jaký používáte v administraci Upgates.",
+    "step2": "V dashboardu vyberte svého AI asistenta a povolte kategorie nástrojů, ke kterým má mít přístup.",
+    "step3": "Zkopírujte MCP adresu do svého AI klienta a začněte se ptát na objednávky, produkty i zákazníky.",
+    "connect": "Přihlásit se a propojit asistenta",
+    "supportLabel": "Potřebujete pomoct?",
+    "supportText": "Napište nám na"
+  }
+}

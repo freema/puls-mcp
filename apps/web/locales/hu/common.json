@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "login": "Bejelentkezés",
+    "dashboard": "Dashboard"
+  },
+  "locale": {
+    "switcherLabel": "Nyelv",
+    "cs": "Čeština",
+    "sk": "Slovenčina",
+    "hu": "Magyar",
+    "en": "English"
+  },
+  "cta": {
+    "tryFree": "Próbálja ki ingyen",
+    "contactUs": "Írjon nekünk",
+    "learnMore": "Tudjon meg többet",
+    "back": "Vissza",
+    "save": "Mentés",
+    "cancel": "Mégse"
+  },
+  "errors": {
+    "generic": {
+      "title": "Valami elromlott.",
+      "description": "Nálunk volt a hiba. Már tudunk róla, és dolgozunk rajta. Próbálja meg újra egy perc múlva.",
+      "retry": "Újrapróbálkozás"
+    },
+    "notFound": {
+      "title": "Ez az oldal nem létezik.",
+      "description": "Lehet, hogy áthelyezték, átnevezték, vagy soha nem is létezett. Térjen vissza a kezdőlapra, vagy írjon nekünk.",
+      "primary": "Vissza a kezdőlapra",
+      "secondary": "Dashboard megnyitása"
+    },
+    "unauthorized": {
+      "title": "Először jelentkezzen be.",
+      "description": "Ehhez az oldalhoz csak bejelentkezés után fér hozzá. Tíz másodperc.",
+      "primary": "Bejelentkezés",
+      "secondary": "Kezdőlap"
+    },
+    "forbidden": {
+      "title": "Ide nem.",
+      "description": "Az oldal létezik, de az Ön fiókja nem láthatja. Válasszon másik üzletet, vagy lépjen kapcsolatba az adminnal.",
+      "primary": "Üzlet választása",
+      "secondary": "Kapcsolat"
+    },
+    "maintenance": {
+      "title": "Karbantartás folyamatban.",
+      "description": "Hamarosan visszatérünk. Kérjük, próbálja meg pár perc múlva.",
+      "primary": "Kezdőlap",
+      "secondary": "Kapcsolat"
+    }
+  }
+}

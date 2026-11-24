@@ -1,0 +1,16 @@
+{
+  "title": "Administration",
+  "nav": {
+    "overview": "Overview",
+    "shops": "Shops",
+    "pricing": "Pricing",
+    "logs": "Logs",
+    "feedback": "Feedback",
+    "webhooks": "Webhooks",
+    "apiKeys": "API Keys",
+    "emails": "Emails",
+    "prompts": "Prompts",
+    "system": "System",
+    "incidents": "Incidents"
+  }
+}
